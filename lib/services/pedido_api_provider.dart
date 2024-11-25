@@ -32,10 +32,21 @@ class PedidoApiProvider extends DBProvider {
     return res;
   }
 
+  Future<int> updateProductoStock(int idProducto, int cantidadVendida) async {
+    final db = (await database)!;
+    var res = await db.rawUpdate('''
+    UPDATE Productos
+    SET stock = stock - ?
+    WHERE idProducto = ? AND stock >= ?
+  ''', [cantidadVendida, idProducto, cantidadVendida]);
+
+    return res;
+  }
+
   Future<List<Venta>> getPedidos() async {
     final db = (await database)!;
     final List<Map<String, dynamic>> res = await db.rawQuery('''
-    SELECT v.idVenta, v.fecha, v.total, c.idCliente, c.cedula, c.nombre, c.apellido
+    SELECT v.idVenta, v.fecha, v.total, v.tipoOperacion, v.direccionEntrega, v.lat, v.lon, c.idCliente, c.cedula, c.nombre, c.apellido
     FROM Venta v
     JOIN Cliente c ON v.idCliente = c.idCliente
   ''');
@@ -48,7 +59,7 @@ class PedidoApiProvider extends DBProvider {
   Future<List<Venta>> getVentasByFecha(String fecha) async {
     final db = (await database)!;
     final List<Map<String, dynamic>> res = await db.rawQuery('''
-    SELECT v.idVenta, v.fecha, v.total, c.idCliente, c.cedula, c.nombre, c.apellido
+    SELECT v.idVenta, v.fecha, v.total, v.tipoOperacion, v.direccionEntrega, v.lat, v.lon, c.idCliente, c.cedula, c.nombre, c.apellido
     FROM Venta v
     JOIN Cliente c ON v.idCliente = c.idCliente
     WHERE v.fecha = ?
@@ -63,11 +74,26 @@ class PedidoApiProvider extends DBProvider {
     final db = (await database)!;
 
     final List<Map<String, dynamic>> res = await db.rawQuery('''
-    SELECT v.idVenta, v.fecha, v.total, c.idCliente, c.cedula, c.nombre, c.apellido
+    SELECT v.idVenta, v.fecha, v.total, v.tipoOperacion, v.direccionEntrega, v.lat, v.lon, c.idCliente, c.cedula, c.nombre, c.apellido
     FROM Venta v
     JOIN Cliente c ON v.idCliente = c.idCliente
     WHERE c.cedula LIKE ? OR c.nombre LIKE ? OR c.apellido LIKE ?
   ''', ['%$text%', '%$text%', '%$text%']);
+
+    return res.isNotEmpty
+        ? res.map((venta) => Venta.fromJson(venta)).toList()
+        : [];
+  }
+
+  Future<List<Venta>> getVentasByTipo(String text) async {
+    final db = (await database)!;
+
+    final List<Map<String, dynamic>> res = await db.rawQuery('''
+    SELECT v.idVenta, v.fecha, v.total, v.tipoOperacion, v.direccionEntrega, v.lat, v.lon, c.idCliente, c.cedula, c.nombre, c.apellido
+    FROM Venta v
+    JOIN Cliente c ON v.idCliente = c.idCliente
+    WHERE v.tipoOperacion = ?
+  ''', [text]);
 
     return res.isNotEmpty
         ? res.map((venta) => Venta.fromJson(venta)).toList()

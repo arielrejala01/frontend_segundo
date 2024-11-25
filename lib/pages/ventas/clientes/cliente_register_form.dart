@@ -28,10 +28,13 @@ class ClienteRegisterForm extends StatelessWidget {
 
             BlocProvider.of<PedidoBloc>(context).add(
               AddPedido(
-                cliente: clienteState.cliente,
-                detalles: carritoState.items,
-                total: total,
-              ),
+                  cliente: clienteState.cliente,
+                  detalles: carritoState.items,
+                  total: total,
+                  tipo: carritoState.tipo,
+                  direccion: carritoState.direccion,
+                  lat: carritoState.lat,
+                  lon: carritoState.lon),
             );
 
             BlocProvider.of<CarritoBloc>(context).add(FinalizarCarrito());

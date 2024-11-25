@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:frontend_segundo/pages/categorias/models/categoria_model.dart';
 import 'package:frontend_segundo/pages/productos/models/producto_model.dart';
 import 'package:frontend_segundo/services/producto_api_provider.dart';
 import 'package:meta/meta.dart';
@@ -64,12 +65,12 @@ class ProductoBloc extends Bloc<ProductoEvent, ProductoState> {
   _mapSearchProductoToState(SearchProducto event, emit) async {
     emit(ProductoInitial());
     try {
-      if (event.text == '') {
+      if (event.text == '' && event.categoria == null) {
         var productos = await ProductoApiProvider.db.getProductos();
         emit(ProductoLoaded(productos: productos));
       } else {
-        var productos =
-            await ProductoApiProvider.db.searchProducto(event.text ?? '');
+        var productos = await ProductoApiProvider.db
+            .searchProducto(event.text ?? '', event.categoria?.id ?? 0);
         emit(ProductoLoaded(productos: productos));
       }
     } catch (e) {

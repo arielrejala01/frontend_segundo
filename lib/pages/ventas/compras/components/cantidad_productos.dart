@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend_segundo/pages/productos/models/producto_model.dart';
 import 'package:frontend_segundo/pages/ventas/compras/bloc/carrito_bloc.dart';
 import 'package:frontend_segundo/pages/ventas/compras/models/item_carrito_model.dart';
@@ -99,25 +100,31 @@ class _CantidadProductosState extends State<CantidadProductos> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            if (productInCart != null) {
-                              BlocProvider.of<CarritoBloc>(context)
-                                  .add(UpdateItemCarrito(
-                                item: ItemCarritoModel(
-                                    id: productInCart.id,
-                                    producto: productInCart.producto,
-                                    cantidad:
-                                        productInCart.cantidad! + cantidad,
-                                    precio: productInCart.precio),
-                              ));
+                            if ((cantidad + (productInCart?.cantidad ?? 0)) >
+                                (widget.producto!.stock ?? 0)) {
+                              modalMensajeTope(context);
                             } else {
-                              BlocProvider.of<CarritoBloc>(context).add(
-                                  AddItemCarrito(
-                                      producto: widget.producto,
-                                      cantidad: cantidad,
-                                      precioVenta:
-                                          widget.producto?.precioVenta));
+                              if (productInCart != null) {
+                                BlocProvider.of<CarritoBloc>(context)
+                                    .add(UpdateItemCarrito(
+                                  item: ItemCarritoModel(
+                                      id: productInCart.id,
+                                      producto: productInCart.producto,
+                                      cantidad:
+                                          productInCart.cantidad! + cantidad,
+                                      precio: productInCart.precio,
+                                      idCarrito: productInCart.idCarrito),
+                                ));
+                              } else {
+                                BlocProvider.of<CarritoBloc>(context).add(
+                                    AddItemCarrito(
+                                        producto: widget.producto,
+                                        cantidad: cantidad,
+                                        precioVenta:
+                                            widget.producto?.precioVenta));
+                              }
+                              Navigator.of(context).pop();
                             }
-                            Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
@@ -145,11 +152,118 @@ class _CantidadProductosState extends State<CantidadProductos> {
   }
 
   ItemCarritoModel? checkProductInCart({CarritoLoaded? state, String? nombre}) {
-    for (ItemCarritoModel item in (state?.items)!) {
+    if (state?.items == null || state!.items!.isEmpty) {
+      return null;
+    }
+
+    for (ItemCarritoModel item in state.items!) {
       if (item.producto?.nombre == nombre) {
         return item;
       }
     }
+
     return null;
+  }
+}
+
+modalMensajeTope(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        elevation: 0.0,
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          children: <Widget>[
+            Container(
+              margin: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  SizedBox(height: 18.0),
+                  Center(
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Icon(
+                              FontAwesomeIcons.circleExclamation,
+                              color: Colors.red,
+                              size: 25,
+                            ),
+                          ),
+                          WidgetSpan(
+                            child: SizedBox(width: 8),
+                          ),
+                          TextSpan(
+                            text:
+                                'La cantidad seleccionada supera el stock disponible.',
+                            style: TextStyle(fontSize: 22),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  SizedBox(height: 18.0),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 0.0,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: CircleAvatar(
+                    radius: 12.0,
+                    backgroundColor: Colors.red,
+                    child: CustomPaint(
+                      size: const Size(6, 6),
+                      painter: DrawSquare(strokeWidth: 4.0),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+class DrawSquare extends CustomPainter {
+  final double strokeWidth;
+
+  DrawSquare({this.strokeWidth = 1.0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = Colors.white
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = strokeWidth;
+
+    canvas.drawLine(const Offset(0, 0), Offset(size.width, size.height), paint);
+
+    canvas.drawLine(Offset(0, size.height), Offset(size.width, 0), paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
   }
 }

@@ -33,7 +33,11 @@ class PedidoBloc extends Bloc<PedidoEvent, PedidoState> {
       var res = await PedidoApiProvider.db.addPedido(Venta(
           cliente: event.cliente,
           fecha: DateFormat('yyyy-MM-dd').format(DateTime.now()),
-          total: event.total ?? 0));
+          total: event.total ?? 0,
+          tipoOperacion: event.tipo,
+          direccionEntrega: event.direccion,
+          lat: event.lat,
+          lon: event.lon));
 
       if (res != 0) {
         int id = await PedidoApiProvider.db.obtenerUltimoIdPedido();
@@ -45,6 +49,9 @@ class PedidoBloc extends Bloc<PedidoEvent, PedidoState> {
                 producto: detalle.producto,
                 cantidad: detalle.cantidad ?? 0,
                 precio: detalle.precio ?? 0));
+
+            await PedidoApiProvider.db.updateProductoStock(
+                detalle.producto!.idProducto!, detalle.cantidad ?? 0);
           }
         }
 
@@ -63,12 +70,25 @@ class PedidoBloc extends Bloc<PedidoEvent, PedidoState> {
     emit(PedidoInitial());
 
     try {
-      if (event.fecha != null && event.fecha != '') {
-        var pedidos = await PedidoApiProvider.db.getVentasByFecha(event.fecha!);
-        emit(PedidoLoaded(ventas: pedidos));
-      } else if (event.textoCliente != null && event.textoCliente != '') {
-        var pedidos =
-            await PedidoApiProvider.db.getVentasByCliente(event.textoCliente!);
+      if ((event.fecha != null && event.fecha != '') ||
+          (event.textoCliente != null && event.textoCliente != '') ||
+          (event.tipo != null && event.tipo != '')) {
+        if (event.fecha != null && event.fecha != '') {
+          var pedidos =
+              await PedidoApiProvider.db.getVentasByFecha(event.fecha!);
+          emit(PedidoLoaded(ventas: pedidos));
+        }
+        if (event.textoCliente != null && event.textoCliente != '') {
+          var pedidos = await PedidoApiProvider.db
+              .getVentasByCliente(event.textoCliente!);
+          emit(PedidoLoaded(ventas: pedidos));
+        }
+        if (event.tipo != null && event.tipo != '') {
+          var pedidos = await PedidoApiProvider.db.getVentasByTipo(event.tipo!);
+          emit(PedidoLoaded(ventas: pedidos));
+        }
+      } else {
+        var pedidos = await PedidoApiProvider.db.getPedidos();
         emit(PedidoLoaded(ventas: pedidos));
       }
     } catch (e) {

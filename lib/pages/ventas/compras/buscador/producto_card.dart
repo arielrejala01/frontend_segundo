@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:frontend_segundo/pages/productos/models/producto_model.dart';
 import 'package:frontend_segundo/pages/ventas/compras/components/cantidad_productos.dart';
@@ -22,16 +24,44 @@ class _ProductoCardState extends State<ProductoCard> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Text(
-            widget.producto?.nombre ?? '',
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 28),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: Colors.grey[200],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Image.file(
+                    File(widget.producto?.imagePath ?? ''),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                width: 50,
+              ),
+              Column(
+                children: [
+                  Text(
+                    widget.producto?.nombre ?? '',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 28),
+                  ),
+                  Text(widget.producto?.categoria?.name ?? '',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w400, fontSize: 20)),
+                  Text('${widget.producto?.precioVenta.toString()} \$',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w400, fontSize: 20)),
+                ],
+              ),
+            ],
           ),
-          Text(widget.producto?.categoria?.name ?? '',
-              style:
-                  const TextStyle(fontWeight: FontWeight.w400, fontSize: 20)),
-          Text('${widget.producto?.precioVenta.toString()} \$',
-              style:
-                  const TextStyle(fontWeight: FontWeight.w400, fontSize: 20)),
           InkWell(
             onTap: () {
               showModalBottomSheet(

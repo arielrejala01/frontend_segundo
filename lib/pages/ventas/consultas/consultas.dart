@@ -16,6 +16,7 @@ class Consultas extends StatefulWidget {
 class _ConsultasState extends State<Consultas> {
   DateTime? selectedDate;
   final TextEditingController _dateController = TextEditingController();
+  String? selectedType;
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -67,6 +68,90 @@ class _ConsultasState extends State<Consultas> {
               suffixIcon: Icon(Icons.calendar_today),
             ),
           ),
+          const SizedBox(
+            height: 10,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              InkWell(
+                onTap: () {
+                  String? prevValue = selectedType;
+                  setState(() {
+                    if (prevValue == 'pickup') {
+                      selectedType = null;
+                    } else {
+                      selectedType = 'pickup';
+                    }
+                  });
+                  BlocProvider.of<PedidoBloc>(context)
+                      .add(SearchPedidos(tipo: selectedType));
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: selectedType == 'pickup'
+                        ? const Color.fromRGBO(132, 182, 244, 1)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: selectedType == 'pickup'
+                        ? null
+                        : Border.all(
+                            color: const Color.fromRGBO(145, 145, 145, 1),
+                          ),
+                  ),
+                  child: Text(
+                    'Pickup',
+                    style: TextStyle(
+                        color: selectedType == 'pickup'
+                            ? Colors.white
+                            : const Color.fromRGBO(145, 145, 145, 1),
+                        fontSize: 18),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  String? prevValue = selectedType;
+                  setState(() {
+                    if (prevValue == 'delivery') {
+                      selectedType = null;
+                    } else {
+                      selectedType = 'delivery';
+                    }
+                  });
+                  BlocProvider.of<PedidoBloc>(context)
+                      .add(SearchPedidos(tipo: selectedType));
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: selectedType == 'delivery'
+                        ? const Color.fromRGBO(132, 182, 244, 1)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: selectedType == 'delivery'
+                        ? null
+                        : Border.all(
+                            color: const Color.fromRGBO(145, 145, 145, 1),
+                          ),
+                  ),
+                  child: Text(
+                    'Delivery',
+                    style: TextStyle(
+                        color: selectedType == 'delivery'
+                            ? Colors.white
+                            : const Color.fromRGBO(145, 145, 145, 1),
+                        fontSize: 18),
+                  ),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           Expanded(
             child: BlocBuilder<PedidoBloc, PedidoState>(
@@ -91,7 +176,7 @@ class _ConsultasState extends State<Consultas> {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    DetalleScreen(id: venta.idVenta ?? 0),
+                                    DetalleScreen(venta: venta),
                               ),
                             );
                           },
@@ -101,7 +186,7 @@ class _ConsultasState extends State<Consultas> {
                                 fontSize: 18, fontWeight: FontWeight.w600),
                           ),
                           subtitle: Text(
-                              '${venta.fecha} - ${venta.cliente?.nombre} ${venta.cliente?.apellido}'),
+                              '${venta.fecha} - ${venta.cliente?.nombre} ${venta.cliente?.apellido} - ${capitalize(venta.tipoOperacion ?? '')}'),
                         );
                       },
                     );
@@ -121,5 +206,10 @@ class _ConsultasState extends State<Consultas> {
         ],
       ),
     );
+  }
+
+  String capitalize(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
   }
 }

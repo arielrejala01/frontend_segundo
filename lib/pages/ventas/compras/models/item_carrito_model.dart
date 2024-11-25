@@ -2,16 +2,22 @@ import 'package:frontend_segundo/pages/productos/models/producto_model.dart';
 
 class ItemCarritoModel {
   int? id;
+  int? idCarrito;
   ProductoModel? producto;
   int? cantidad;
   double? precio;
 
-  ItemCarritoModel({this.id, this.producto, this.cantidad, this.precio});
+  ItemCarritoModel(
+      {this.id, this.idCarrito, this.producto, this.cantidad, this.precio});
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    if (id != null) data['idCarrito'] = id;
-    if (producto != null) data['idProducto'] = producto?.idProducto;
+    if (idCarrito != null) {
+      data['idCarrito'] = idCarrito;
+    }
+    if (producto != null) {
+      data['idProducto'] = producto?.idProducto;
+    }
     if (cantidad != null) data['cantidad'] = cantidad;
     if (precio != null) data['precioVenta'] = precio;
     return data;
@@ -19,7 +25,8 @@ class ItemCarritoModel {
 
   factory ItemCarritoModel.fromJson(Map<String, dynamic> json) {
     return ItemCarritoModel(
-      id: json['idCarrito'],
+      id: json['idDetalle'],
+      idCarrito: json['idCarrito'],
       cantidad: json['cantidad'],
       producto: json['idProducto'] != null
           ? ProductoModel(

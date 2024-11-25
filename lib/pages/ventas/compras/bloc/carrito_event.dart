@@ -19,4 +19,13 @@ final class UpdateItemCarrito extends CarritoEvent {
   UpdateItemCarrito({this.item});
 }
 
+final class AddMetodoEntrega extends CarritoEvent {
+  final String? tipo;
+  final String? direccion;
+  final double? lat;
+  final double? lon;
+
+  AddMetodoEntrega({this.tipo, this.direccion, this.lat, this.lon});
+}
+
 final class FinalizarCarrito extends CarritoEvent {}

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -124,16 +126,22 @@ class _ProductosState extends State<Productos> {
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(16),
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: const BoxDecoration(
-                                color: Color.fromARGB(255, 108, 166, 236),
-                                shape: BoxShape.circle),
-                            child: const Icon(
-                              FontAwesomeIcons.breadSlice,
-                              color: Colors.white,
-                              size: 20,
+                            width: 65,
+                            height: 65,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.grey[200],
                             ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5),
+                              child: Image.file(
+                                File(state.productos?[index].imagePath ?? ''),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10,
                           ),
                           Expanded(
                             child: Column(
@@ -152,6 +160,13 @@ class _ProductosState extends State<Productos> {
                                   style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700),
+                                ),
+                                Text(
+                                  '${state.productos?[index].stock} unidades disponibles',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500),
                                 ),
                               ],
                             ),

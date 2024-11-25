@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DBProvider {
   Database? _database;
-  static const int version = 1;
+  static const int version = 7;
 
   Future<Database?> get database async {
     if (_database != null) {
@@ -23,10 +23,13 @@ class DBProvider {
         Batch batch = db.batch();
 
         batch.execute('''
-CREATE TABLE Categoria(
-                    idCategoria INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nombre TEXT NOT NULL
-                );
+          CREATE TABLE Categoria (
+              idCategoria INTEGER PRIMARY KEY AUTOINCREMENT,
+              nombre TEXT NOT NULL,
+              codePoint INTEGER NOT NULL,
+              fontFamily TEXT NOT NULL,
+              fontPackage TEXT
+          );
         ''');
 
         batch.execute('''
@@ -35,6 +38,8 @@ CREATE TABLE Productos(
                     nombre TEXT NOT NULL,
                     idCategoria INTEGER,
                     precioVenta REAL NOT NULL,
+                    stock INTEGER NOT NULL,
+                    imagePath TEXT NOT NULL,
                     FOREIGN KEY(idCategoria) REFERENCES Categoria(idCategoria)
                 );
         ''');
@@ -45,6 +50,10 @@ CREATE TABLE Venta(
                     fecha TEXT NOT NULL,
                     idCliente INTEGER,
                     total REAL NOT NULL,
+                    tipoOperacion TEXT NOT NULL,
+                    direccionEntrega TEXT,
+                    lat REAL,
+                    lon REAL,
                     FOREIGN KEY(idCliente) REFERENCES Cliente(idCliente)
                 );
         ''');
@@ -71,13 +80,25 @@ CREATE TABLE Cliente(
         ''');
 
         batch.execute('''
-CREATE TABLE Carrito(
-                    idCarrito INTEGER PRIMARY KEY AUTOINCREMENT,
-                    idProducto INTEGER,
-                    cantidad INTEGER NOT NULL,
-                    precioVenta REAL,
-                    FOREIGN KEY(idProducto) REFERENCES Productos(idProducto)
-                );
+          CREATE TABLE Carrito (
+            idCarrito INTEGER PRIMARY KEY AUTOINCREMENT,
+            tipoOperacion TEXT,
+            direccionEntrega TEXT,
+            lat REAL,
+            lon REAL
+          );
+        ''');
+
+        batch.execute('''
+          CREATE TABLE CarritoDetalles (
+            idDetalle INTEGER PRIMARY KEY AUTOINCREMENT,
+            idCarrito INTEGER,
+            idProducto INTEGER,
+            cantidad INTEGER NOT NULL,
+            precioVenta REAL,
+            FOREIGN KEY(idCarrito) REFERENCES Carrito(idCarrito),
+            FOREIGN KEY(idProducto) REFERENCES Productos(idProducto)
+          );
         ''');
 
         await batch.commit();
@@ -93,10 +114,13 @@ CREATE TABLE Carrito(
         batch.execute('DROP TABLE IF EXISTS Carrito');
 
         batch.execute('''
-CREATE TABLE Categoria(
-                    idCategoria INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nombre TEXT NOT NULL
-                );
+          CREATE TABLE Categoria (
+              idCategoria INTEGER PRIMARY KEY AUTOINCREMENT,
+              nombre TEXT NOT NULL,
+              codePoint INTEGER NOT NULL,
+              fontFamily TEXT NOT NULL,
+              fontPackage TEXT
+          );
         ''');
 
         batch.execute('''
@@ -105,6 +129,8 @@ CREATE TABLE Productos(
                     nombre TEXT NOT NULL,
                     idCategoria INTEGER,
                     precioVenta REAL NOT NULL,
+                    stock INTEGER NOT NULL,
+                    imagePath TEXT NOT NULL,
                     FOREIGN KEY(idCategoria) REFERENCES Categoria(idCategoria)
                 );
         ''');
@@ -115,6 +141,10 @@ CREATE TABLE Venta(
                     fecha TEXT NOT NULL,
                     idCliente INTEGER,
                     total REAL NOT NULL,
+                    tipoOperacion TEXT NOT NULL,
+                    direccionEntrega TEXT,
+                    lat REAL,
+                    lon REAL,
                     FOREIGN KEY(idCliente) REFERENCES Cliente(idCliente)
                 );
         ''');
@@ -141,13 +171,25 @@ CREATE TABLE Cliente(
         ''');
 
         batch.execute('''
-CREATE TABLE Carrito(
-                    idCarrito INTEGER PRIMARY KEY AUTOINCREMENT,
-                    idProducto INTEGER,
-                    cantidad INTEGER NOT NULL,
-                    precioVenta REAL,
-                    FOREIGN KEY(idProducto) REFERENCES Productos(idProducto)
-                );
+          CREATE TABLE Carrito (
+            idCarrito INTEGER PRIMARY KEY AUTOINCREMENT,
+            tipoOperacion TEXT,
+            direccionEntrega TEXT,
+            lat REAL,
+            lon REAL
+          );
+        ''');
+
+        batch.execute('''
+          CREATE TABLE CarritoDetalles (
+            idDetalle INTEGER PRIMARY KEY AUTOINCREMENT,
+            idCarrito INTEGER,
+            idProducto INTEGER,
+            cantidad INTEGER NOT NULL,
+            precioVenta REAL,
+            FOREIGN KEY(idCarrito) REFERENCES Carrito(idCarrito),
+            FOREIGN KEY(idProducto) REFERENCES Productos(idProducto)
+          );
         ''');
 
         await batch.commit();

@@ -127,8 +127,13 @@ class _CategoriasState extends State<Categorias> {
                             decoration: const BoxDecoration(
                                 color: Color.fromARGB(255, 108, 166, 236),
                                 shape: BoxShape.circle),
-                            child: const Icon(
-                              FontAwesomeIcons.list,
+                            child: Icon(
+                              IconData(
+                                state.categorias?[index].codePoint ?? 0,
+                                fontFamily: state.categorias?[index].fontFamily,
+                                fontPackage:
+                                    state.categorias?[index].fontPackage,
+                              ),
                               color: Colors.white,
                               size: 20,
                             ),

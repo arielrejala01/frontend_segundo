@@ -5,12 +5,20 @@ class Venta {
   final String fecha;
   final Cliente? cliente;
   final double total;
+  final String? tipoOperacion;
+  final String? direccionEntrega;
+  final double? lat;
+  final double? lon;
 
   Venta({
     this.idVenta,
     required this.fecha,
     this.cliente,
     required this.total,
+    this.tipoOperacion,
+    this.direccionEntrega,
+    this.lat,
+    this.lon,
   });
 
   Map<String, dynamic> toJson() {
@@ -19,6 +27,10 @@ class Venta {
     data['fecha'] = fecha;
     data['idCliente'] = cliente?.idCliente;
     data['total'] = total;
+    data['tipoOperacion'] = tipoOperacion;
+    if (direccionEntrega != null) data['direccionEntrega'] = direccionEntrega;
+    if (lat != null) data['lat'] = lat;
+    if (lon != null) data['lon'] = lon;
     return data;
   }
 
@@ -34,6 +46,10 @@ class Venta {
               cedula: json['cedula'])
           : null,
       total: json['total'],
+      tipoOperacion: json['tipoOperacion'],
+      direccionEntrega: json['direccionEntrega'],
+      lat: json['lat'],
+      lon: json['lon'],
     );
   }
 }

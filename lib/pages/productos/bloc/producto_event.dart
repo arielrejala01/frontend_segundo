@@ -25,6 +25,7 @@ final class DeleteProducto extends ProductoEvent {
 
 final class SearchProducto extends ProductoEvent {
   final String? text;
+  final CategoriaModel? categoria;
 
-  SearchProducto({this.text});
+  SearchProducto({this.text, this.categoria});
 }

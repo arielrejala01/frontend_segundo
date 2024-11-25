@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend_segundo/pages/productos/bloc/producto_bloc.dart';
 import 'package:frontend_segundo/pages/ventas/clientes/bloc/cliente_bloc.dart';
 import 'package:frontend_segundo/pages/ventas/clientes/cliente_register_form.dart';
 import 'package:frontend_segundo/pages/ventas/compras/bloc/carrito_bloc.dart';
@@ -30,6 +31,9 @@ class _CarritoState extends State<Carrito> {
       ),
       body: BlocBuilder<CarritoBloc, CarritoState>(
         builder: (context, state) {
+          if (state is CarritoNotLoaded) {
+            return Center(child: Text(state.error ?? ''));
+          }
           if (state is CarritoInitial) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -41,6 +45,48 @@ class _CarritoState extends State<Carrito> {
                 0;
             return Column(
               children: [
+                InkWell(
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/metodo_entrega');
+                  },
+                  child: Container(
+                    width: 350,
+                    height: 60,
+                    margin: const EdgeInsets.only(top: 10, bottom: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(blurRadius: 2, color: Colors.grey.shade400)
+                        ]),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          color: Color.fromRGBO(132, 182, 244, 1),
+                          size: 30,
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Expanded(
+                            child: Text(
+                          state.tipo == null || state.tipo?.isEmpty == true
+                              ? 'Seleccionar un método de entrega'
+                              : state.tipo == 'pickup'
+                                  ? 'Pickup'
+                                  : 'Entregar en ${state.direccion}',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                        )),
+                      ],
+                    ),
+                  ),
+                ),
+                Divider(
+                  color: Colors.grey.shade300,
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
@@ -104,6 +150,8 @@ class _CarritoState extends State<Carrito> {
                   InkWell(
                     onTap: () {
                       BlocProvider.of<CarritoBloc>(context).add(LoadCarrito());
+                      BlocProvider.of<ProductoBloc>(context)
+                          .add(LoadProductos());
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     },
                     child: Container(
@@ -214,10 +262,13 @@ class _CarritoState extends State<Carrito> {
                   if (clienteState is ClienteLoaded &&
                       clienteState.cliente != null) {
                     BlocProvider.of<PedidoBloc>(context).add(AddPedido(
-                      cliente: clienteState.cliente,
-                      total: total,
-                      detalles: carrito.items,
-                    ));
+                        cliente: clienteState.cliente,
+                        total: total,
+                        detalles: carrito.items,
+                        tipo: carrito.tipo,
+                        direccion: carrito.direccion,
+                        lat: carrito.lat,
+                        lon: carrito.lon));
 
                     BlocProvider.of<CarritoBloc>(context)
                         .add(FinalizarCarrito());

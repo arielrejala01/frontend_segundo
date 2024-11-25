@@ -16,7 +16,7 @@ class ProductoApiProvider extends DBProvider {
   Future<List<ProductoModel>> getProductos() async {
     final db = (await database)!;
     var res = await db.rawQuery('''
-    SELECT p.idProducto, p.nombre, p.idCategoria, p.precioVenta, c.nombre AS nombreCategoria
+    SELECT p.idProducto, p.nombre, p.idCategoria, p.precioVenta, c.nombre AS nombreCategoria, p.stock, p.imagePath, c.codePoint, c.fontFamily, c.fontPackage
     FROM Productos p
     LEFT JOIN Categoria c ON p.idCategoria = c.idCategoria
   ''');
@@ -28,14 +28,16 @@ class ProductoApiProvider extends DBProvider {
     return productos;
   }
 
-  Future<List<ProductoModel>> searchProducto(String text) async {
+  Future<List<ProductoModel>> searchProducto(String text, int categoria) async {
     final db = (await database)!;
     var res = await db.rawQuery('''
-    SELECT p.idProducto, p.nombre, p.idCategoria, p.precioVenta, c.nombre AS nombreCategoria
+    SELECT p.idProducto, p.nombre, p.idCategoria, p.precioVenta, 
+           c.nombre AS nombreCategoria, p.stock, p.imagePath, c.codePoint, c.fontFamily, c.fontPackage
     FROM Productos p
     LEFT JOIN Categoria c ON p.idCategoria = c.idCategoria
-    WHERE p.nombre LIKE ? OR c.nombre LIKE ?
-  ''', ['%$text%', '%$text%']);
+    WHERE p.nombre LIKE ?
+      AND (? = 0 OR p.idCategoria = ?)
+  ''', ['%$text%', categoria, categoria]);
 
     List<ProductoModel> productos = res.isNotEmpty
         ? res.map((note) => ProductoModel.fromJson(note)).toList()

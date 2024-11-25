@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_iconpicker/Models/configuration.dart';
+import 'package:flutter_iconpicker/flutter_iconpicker.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:frontend_segundo/pages/categorias/bloc/categoria_bloc.dart';
 import 'package:frontend_segundo/pages/categorias/models/categoria_model.dart';
@@ -15,6 +17,7 @@ class CategoriaForm extends StatefulWidget {
 class _CategoriaFormState extends State<CategoriaForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameEditingController = TextEditingController();
+  Icon? _icon;
 
   @override
   void initState() {
@@ -22,7 +25,24 @@ class _CategoriaFormState extends State<CategoriaForm> {
 
     if (widget.categoria != null) {
       _nameEditingController.text = widget.categoria?.name ?? '';
+      _icon = Icon(IconData(widget.categoria?.codePoint ?? 0,
+          fontFamily: widget.categoria?.fontFamily,
+          fontPackage: widget.categoria?.fontPackage));
     }
+  }
+
+  _pickIcon() async {
+    IconPickerIcon? icon = await showIconPicker(
+      context,
+      configuration: const SinglePickerConfiguration(
+        iconPackModes: [IconPack.cupertino],
+      ),
+    );
+
+    _icon = Icon(icon?.data);
+    setState(() {});
+
+    debugPrint('Picked Icon:  $_icon');
   }
 
   @override
@@ -64,6 +84,34 @@ class _CategoriaFormState extends State<CategoriaForm> {
                       return null;
                     },
                   ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  ElevatedButton(
+                    style: const ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(
+                          Color.fromRGBO(132, 182, 244, 1)),
+                    ),
+                    onPressed: _pickIcon,
+                    child: const Text(
+                      'Seleccionar un ícono',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16),
+                    ),
+                  ),
+                  if (_icon != null)
+                    Row(
+                      children: [
+                        const Text(
+                          'Ícono seleccionado: ',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w400),
+                        ),
+                        _icon!
+                      ],
+                    )
                 ],
               ),
             ),
@@ -78,11 +126,17 @@ class _CategoriaFormState extends State<CategoriaForm> {
               BlocProvider.of<CategoriaBloc>(context).add(UpdateCategoria(
                   categoria: CategoriaModel(
                       id: widget.categoria?.id,
-                      name: _nameEditingController.text)));
+                      name: _nameEditingController.text,
+                      codePoint: _icon?.icon?.codePoint,
+                      fontFamily: _icon?.icon?.fontFamily,
+                      fontPackage: _icon?.icon?.fontPackage)));
             } else {
               BlocProvider.of<CategoriaBloc>(context).add(AddCategoria(
-                  categoria:
-                      CategoriaModel(name: _nameEditingController.text)));
+                  categoria: CategoriaModel(
+                      name: _nameEditingController.text,
+                      codePoint: _icon?.icon?.codePoint,
+                      fontFamily: _icon?.icon?.fontFamily,
+                      fontPackage: _icon?.icon?.fontPackage)));
             }
 
             Navigator.of(context).pop();

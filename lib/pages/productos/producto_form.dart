@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -5,6 +7,7 @@ import 'package:frontend_segundo/pages/categorias/bloc/categoria_bloc.dart';
 import 'package:frontend_segundo/pages/categorias/models/categoria_model.dart';
 import 'package:frontend_segundo/pages/productos/bloc/producto_bloc.dart';
 import 'package:frontend_segundo/pages/productos/models/producto_model.dart';
+import 'package:frontend_segundo/services/image_picker_services.dart';
 
 class ProductoForm extends StatefulWidget {
   final ProductoModel? producto;
@@ -19,8 +22,10 @@ class _ProductoFormState extends State<ProductoForm> {
   final TextEditingController _nameEditingController = TextEditingController();
   final TextEditingController _precioEditingController =
       TextEditingController();
+  final TextEditingController _stockEditingController = TextEditingController();
   List<CategoriaModel>? categorias;
   CategoriaModel? categoriaSeleccionada;
+  String? photoPath;
 
   @override
   void initState() {
@@ -32,6 +37,9 @@ class _ProductoFormState extends State<ProductoForm> {
       _nameEditingController.text = widget.producto?.nombre ?? '';
       _precioEditingController.text =
           widget.producto?.precioVenta.toString() ?? '';
+      _stockEditingController.text = widget.producto?.stock.toString() ?? '';
+      categoriaSeleccionada = widget.producto?.categoria;
+      photoPath = widget.producto?.imagePath;
     }
   }
 
@@ -96,6 +104,19 @@ class _ProductoFormState extends State<ProductoForm> {
                         return null;
                       },
                     ),
+                    TextFormField(
+                      controller: _stockEditingController,
+                      decoration: const InputDecoration(
+                        labelText: 'Cantidad',
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor ingrese una cantidad';
+                        }
+                        return null;
+                      },
+                    ),
                     const SizedBox(
                       height: 8,
                     ),
@@ -115,6 +136,31 @@ class _ProductoFormState extends State<ProductoForm> {
                         );
                       }).toList(),
                     ),
+                    ElevatedButton(
+                      style: const ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(
+                            Color.fromRGBO(132, 182, 244, 1)),
+                      ),
+                      onPressed: () async {
+                        final path = await CameraGalleryService().selectPhoto();
+                        if (path == null) return;
+                        setState(() {
+                          photoPath = path;
+                        });
+                      },
+                      child: const Text(
+                        'Seleccionar una imagen',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16),
+                      ),
+                    ),
+                    if (photoPath != null)
+                      SizedBox(
+                          width: 200,
+                          height: 200,
+                          child: Image.file(File(photoPath ?? '')))
                   ],
                 ),
               ),
@@ -132,15 +178,17 @@ class _ProductoFormState extends State<ProductoForm> {
                       idProducto: widget.producto?.idProducto,
                       nombre: _nameEditingController.text,
                       categoria: categoriaSeleccionada,
-                      precioVenta:
-                          double.parse(_precioEditingController.text))));
+                      precioVenta: double.parse(_precioEditingController.text),
+                      stock: int.parse(_stockEditingController.text),
+                      imagePath: photoPath)));
             } else {
               BlocProvider.of<ProductoBloc>(context).add(AddProducto(
                   producto: ProductoModel(
                       nombre: _nameEditingController.text,
                       categoria: categoriaSeleccionada,
-                      precioVenta:
-                          double.parse(_precioEditingController.text))));
+                      precioVenta: double.parse(_precioEditingController.text),
+                      stock: int.parse(_stockEditingController.text),
+                      imagePath: photoPath)));
             }
 
             Navigator.of(context).pop();
